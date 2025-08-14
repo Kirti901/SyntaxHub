@@ -1,0 +1,30 @@
+const mongoose=require("mongoose");
+const projectSchema=new mongoose.Schema({
+    name:{
+        type:String,
+        required:true,
+        unique:true,
+    },
+    projLanguage:{
+        type:String,
+        required:true,
+        enum:["c","c++","java","python","javascript","bash"]
+    },
+    code:{
+        type:String,
+        required:true,
+    },
+    userName:{
+        type:String,
+        required:true,
+    },
+    date:{
+        type:Date,
+        default:Date.now,
+    },
+    version:{
+        type:String,
+        required:true,
+    }
+});
+module.exports=mongoose.model("Project",projectSchema);
