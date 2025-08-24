@@ -48,12 +48,10 @@ const Login = () => {
         className="w-full max-w-md bg-[#0f0e0e]/90 p-8 rounded-2xl shadow-2xl border border-gray-800 backdrop-blur-sm"
         autoComplete="off"
       >
-        {/* Logo */}
         <div className="flex justify-center mb-6">
           <img className="w-48 object-cover" src={logo} alt="SyntaxHub Logo" />
         </div>
 
-        {/* Email */}
         <div className="mb-6">
           <input
             type="email"
@@ -66,7 +64,6 @@ const Login = () => {
           />
         </div>
 
-        {/* Password */}
         <div className="mb-6 relative">
           <input
             type={showPwd ? "text" : "password"}
@@ -89,7 +86,7 @@ const Login = () => {
           </span>
         </div>
 
-        {/* Link to SignUp */}
+        
         <p className="text-gray-400 text-sm mb-6">
           Don't have an account?{" "}
           <Link to="/signUp" className="text-blue-400 hover:underline font-medium">
@@ -97,7 +94,7 @@ const Login = () => {
           </Link>
         </p>
 
-        {/* Submit Button */}
+  
         <button
           type="submit"
           className="w-full py-3 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"

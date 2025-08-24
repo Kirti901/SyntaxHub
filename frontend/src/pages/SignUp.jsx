@@ -42,12 +42,12 @@ const SignUp = () => {
         onSubmit={submitForm}
         className="w-full max-w-md bg-[#0f0e0e]/90 p-8 rounded-2xl shadow-2xl border border-gray-800 backdrop-blur-sm"
       >
-        {/* Logo */}
+        
         <div className="flex justify-center mb-6">
           <img className="w-48 object-cover" src={logo} alt="SyntaxHub Logo" />
         </div>
 
-        {/* Full Name */}
+        
         <div className="mb-4">
           <input
             onChange={(e) => setFullName(e.target.value)}
@@ -59,7 +59,7 @@ const SignUp = () => {
           />
         </div>
 
-        {/* Email */}
+        
         <div className="mb-4">
           <input
             onChange={(e) => setEmail(e.target.value)}
@@ -71,7 +71,7 @@ const SignUp = () => {
           />
         </div>
 
-        {/* Password */}
+        
         <div className="mb-4 relative">
           <input
             onChange={(e) => setPwd(e.target.value)}
@@ -89,7 +89,7 @@ const SignUp = () => {
           </span>
         </div>
 
-        {/* Link to Login */}
+       
         <p className="text-gray-400 text-sm mb-4">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-400 hover:underline">
@@ -97,7 +97,7 @@ const SignUp = () => {
           </Link>
         </p>
 
-        {/* Submit Button */}
+        
         <button
           className="w-full py-3 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/50 transition-all"
           disabled={loading}

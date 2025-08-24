@@ -12,8 +12,10 @@ const Editor = () => {
   const [error, setError] = useState(false);
   const [data, setData] = useState(null);
 
+  
+  const [loading, setLoading] = useState(false); 
 
-  // Fetch project data
+  // To Fetch project data
   useEffect(() => {
     fetch(`${api_base_url}/getProject`, {
       mode: "cors",
@@ -79,6 +81,11 @@ const Editor = () => {
       bash: "5.1.0",
     };
 
+    setLoading(true);
+    setOutput(""); 
+    setError(false);
+
+
     fetch("https://emkc.org/api/v2/piston/execute", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -92,16 +99,16 @@ const Editor = () => {
               (data.projLanguage === "python"
                 ? ".py"
                 : data.projLanguage === "java"
-                  ? ".java"
-                  : data.projLanguage === "javascript"
-                    ? ".js"
-                    : data.projLanguage === "c"
-                      ? ".c"
-                      : data.projLanguage === "cpp"
-                        ? ".cpp"
-                        : data.projLanguage === "bash"
-                          ? ".sh"
-                          : ""),
+                ? ".java"
+                : data.projLanguage === "javascript"
+                ? ".js"
+                : data.projLanguage === "c"
+                ? ".c"
+                : data.projLanguage === "cpp"
+                ? ".cpp"
+                : data.projLanguage === "bash"
+                ? ".sh"
+                : ""),
             content: code,
           },
         ],
@@ -120,7 +127,10 @@ const Editor = () => {
       .catch(() => {
         setOutput("Error running project.");
         setError(true);
-      });
+      })
+      
+      .finally(() => setLoading(false));
+
   };
 
   return (
@@ -143,15 +153,15 @@ const Editor = () => {
                   { token: "string", foreground: "CE9178" },
                 ],
                 colors: {
-                  "editor.background": "#27272a", // same as your output terminal
+                  "editor.background": "#27272a",
                   "editor.foreground": "#ffffff",
                   "editorCursor.foreground": "#ffffff",
                   "editor.lineHighlightBackground": "#3a3a3d",
                   "editorLineNumber.foreground": "#9ca3af",
                   "editorLineNumber.activeForeground": "#ffffff",
-                  "editor.selectionBackground": "#3b82f6aa", // blue highlight
+                  "editor.selectionBackground": "#3b82f6aa",
                   "editor.inactiveSelectionBackground": "#3b82f655",
-                }
+                },
               });
 
               monaco.editor.setTheme("custom-terminal");
@@ -176,24 +186,35 @@ const Editor = () => {
             width="100%"
             language="python"
             value={code}
-            onChange={(newCode) => setCode(newCode || '')}
+            onChange={(newCode) => setCode(newCode || "")}
           />
         </div>
 
-        {/* Output Panel */}
+        {/* Output screen */}
         <div className="right p-[15px] w-[50%] h-full bg-[#27272a]">
           <div className="flex pb-3 border-b-[1px] border-b-[#1e1e1f] items-center justify-between px-[30px]">
             <p className="p-0 m-0">Output</p>
             <button
               className="btnNormal !w-fit !px-[20px] bg-blue-500 transition-all hover:bg-blue-600"
-              onClick={runProject} // Save when clicking the button
+              onClick={runProject}
             >
               Run
             </button>
-
           </div>
 
-          <pre className={`w-full h-[75vh] ${error ? "text-red-500" : ""}`} style={{ textWrap: "nowrap" }}>{output}</pre>
+          {/* to show loader */}
+          {loading ? (
+            <div className="flex items-center justify-center h-[75vh]">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <pre
+              className={`w-full h-[75vh] overflow-auto ${error ? "text-red-500" : ""}`}
+              style={{ textWrap: "nowrap" }}
+            >
+              {output}
+            </pre>
+          )}
         </div>
       </div>
     </>
