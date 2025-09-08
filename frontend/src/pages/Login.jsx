@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { api_base_url } from '../helper';
-import logo from "../Logos/logo.png";
+import logo from "../Logo/logo.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
@@ -145,7 +145,7 @@ const Login = () => {
         </button>
       </form>
 
-      {/* Forgot Password Modal */}
+      {/* Forgot Password  */}
       {showForgot && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
           <form

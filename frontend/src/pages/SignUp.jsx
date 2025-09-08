@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import logo from "../Logos/logo.png";
+import logo from "../Logo/logo.png";
 import { Link, useNavigate } from 'react-router-dom';
 import { api_base_url } from '../helper';
 import { toast } from 'react-toastify';
@@ -34,7 +34,7 @@ const SignUp = () => {
   const submitForm = (e) => {
     e.preventDefault();
     if (!isStrongPassword(pwd)) {
-      // Removed toast.error, inline red msg is enough
+      
       return;
     }
     setLoading(true);
@@ -101,7 +101,7 @@ const SignUp = () => {
             className="w-full px-4 py-3 rounded-lg bg-black/40 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12"
           />
 
-          {/* eye toggle */}
+          
           <button
             type="button"
             onClick={() => setShowPwd(!showPwd)}
@@ -114,7 +114,6 @@ const SignUp = () => {
           {pwdMsg && <p className="text-red-500 text-sm mt-2">{pwdMsg}</p>}
         </div>
 
-        {/* Removed grey static password rule text */}
 
         <p className="text-gray-400 text-sm mb-4">
           Already have an account?{" "}
