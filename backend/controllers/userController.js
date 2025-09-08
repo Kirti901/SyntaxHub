@@ -2,6 +2,7 @@ const userModel = require("../Models/userModel");
 const projectModel = require("../Models/projectModel")
 const bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const secret = "secret";
 
 
@@ -18,8 +19,6 @@ function getStartupCode(language) {
     return '#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}';
   } else if (language.toLowerCase() === "go") {
     return 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello World")\n}';
-  } else if (language.toLowerCase() === "bash") {
-    return 'echo "Hello World"';
   } else {
     return 'Language not supported';
   }
@@ -94,6 +93,85 @@ exports.login = async (req, res) => {
       success: false,
       msg: error.message
     })
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email, newPwd } = req.body;
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "User not found"
+      });
+    }
+    // You can add password strength validation here if you want
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(newPwd, salt, async function (err, hash) {
+        user.password = hash;
+        await user.save();
+        return res.status(200).json({
+          success: true,
+          msg: "Password changed successfully"
+        });
+      });
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      msg: err.message
+    });
+  }
+};
+exports.requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+  const user = await userModel.findOne({ email });
+  if (!user) return res.status(404).json({ success: false, msg: "User not found" });
+
+  // Create reset token (valid for 1 hour)
+  const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: '1h' });
+
+  // Send email
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  const resetLink = `http://localhost:5173/reset-password/${token}`;
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Request",
+      html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.</p>`
+    });
+    res.json({ success: true, msg: "Password reset email sent!" });
+  } catch (err) {
+    console.error("Email error:", err); // <-- This will show the real error in your terminal
+    res.status(500).json({ success: false, msg: "Error sending email." });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, newPwd } = req.body;
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET);
+    const user = await userModel.findById(decoded.userId);
+    if (!user) return res.status(404).json({ success: false, msg: "User not found" });
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPwd, salt);
+    await user.save();
+
+    res.json({ success: true, msg: "Password reset successful!" });
+  } catch (err) {
+    res.status(400).json({ success: false, msg: "Invalid or expired token." });
   }
 };
 exports.createProj = async (req, res) => {
@@ -285,4 +363,3 @@ exports.editProject = async (req, res) => {
   }
 };
 
-//to export all these at once : module.exports:{getProject,signUp etc} at the end 

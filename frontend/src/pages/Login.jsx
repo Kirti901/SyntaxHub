@@ -10,7 +10,9 @@ const Login = () => {
   const [pwd, setPwd] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
-  const location = useLocation();
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [newPwd, setNewPwd] = useState("");
   const navigate = useNavigate();
 
   const submitForm = (e) => {
@@ -27,18 +29,50 @@ const Login = () => {
         pwd: pwd
       })
     })
-    .then(res => res.json())
-    .then(data => {
-      setLoading(false);
-      if (data.success) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("isLoggedIn", true);
-        window.location.href = "/";
-      } else {
-        toast.error(data.msg);
-      }
+      .then(res => res.json())
+      .then(data => {
+        setLoading(false);
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("isLoggedIn", true);
+          window.location.href = "/";
+        } else {
+          toast.error(data.msg);
+        }
+      })
+      .catch(() => setLoading(false));
+  };
+
+  // Forgot Password Handler
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    if (!forgotEmail || !newPwd) {
+      toast.error("Please enter your email and new password.");
+      return;
+    }
+    fetch(api_base_url + "/forgotPassword", {
+      mode: "cors",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: forgotEmail,
+        newPwd: newPwd
+      })
     })
-    .catch(() => setLoading(false));
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          toast.success("Password changed successfully. You can now login.");
+          setShowForgot(false);
+          setForgotEmail("");
+          setNewPwd("");
+        } else {
+          toast.error(data.msg);
+        }
+      })
+      .catch(() => toast.error("Error changing password."));
   };
 
   return (
@@ -86,15 +120,22 @@ const Login = () => {
           </span>
         </div>
 
-        
-        <p className="text-gray-400 text-sm mb-6">
-          Don't have an account?{" "}
-          <Link to="/signUp" className="text-blue-400 hover:underline font-medium">
-            Sign Up
-          </Link>
-        </p>
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-gray-400 text-sm">
+            Don't have an account?{" "}
+            <Link to="/signUp" className="text-blue-400 hover:underline font-medium">
+              Sign Up
+            </Link>
+          </p>
+          <button
+            type="button"
+            className="text-blue-400 hover:underline text-sm"
+            onClick={() => setShowForgot(true)}
+          >
+            Forgot Password?
+          </button>
+        </div>
 
-  
         <button
           type="submit"
           className="w-full py-3 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
@@ -103,6 +144,59 @@ const Login = () => {
           {loading ? "Logging In..." : "Login"}
         </button>
       </form>
+
+      {/* Forgot Password Modal */}
+      {showForgot && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              fetch(api_base_url + "/requestPasswordReset", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: forgotEmail })
+              })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    toast.success("Check your email for the reset link.");
+                    setShowForgot(false);
+                    setForgotEmail("");
+                  } else {
+                    toast.error(data.msg);
+                  }
+                })
+                .catch(() => toast.error("Error sending reset email."));
+            }}
+            className="bg-[#18181b] p-8 rounded-xl shadow-lg w-full max-w-sm border border-gray-700"
+          >
+            <h2 className="text-xl font-bold text-white mb-4">Reset Password</h2>
+            <input
+              type="email"
+              placeholder="Enter your registered email"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 mb-4 rounded-lg bg-black/40 text-white border border-gray-700"
+            />
+            <div className="flex justify-between">
+              <button
+                type="button"
+                className="text-gray-400 hover:underline"
+                onClick={() => setShowForgot(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500"
+              >
+                Send Reset Link
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };

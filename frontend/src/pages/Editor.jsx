@@ -11,11 +11,10 @@ const Editor = () => {
   const [output, setOutput] = useState("");
   const [error, setError] = useState(false);
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [input, setInput] = useState("");
+  const [needsInput, setNeedsInput] = useState(false); // <-- toggle visibility
 
-  
-  const [loading, setLoading] = useState(false); 
-
-  // To Fetch project data
   useEffect(() => {
     fetch(`${api_base_url}/getProject`, {
       mode: "cors",
@@ -31,12 +30,22 @@ const Editor = () => {
         if (data.success) {
           setCode(data.project.code);
           setData(data.project);
+          checkInputRequirement(data.project.code);
         } else {
           toast.error(data.msg);
         }
       })
       .catch(() => toast.error("Failed to load project."));
   }, [id]);
+
+
+  const checkInputRequirement = (codeText) => {
+    const inputKeywords = ["cin", "scanf", "gets","input("];
+    const requiresInput = inputKeywords.some((kw) =>
+      codeText.toLowerCase().includes(kw.toLowerCase())
+    );
+    setNeedsInput(requiresInput);
+  };
 
   const saveProject = () => {
     const trimmedCode = code?.toString().trim();
@@ -72,65 +81,69 @@ const Editor = () => {
   }, [code]);
 
   const runProject = () => {
-    const versions = {
-      python: "3.10.0",
-      java: "15.0.2",
-      javascript: "18.15.0",
-      c: "10.2.0",
-      cpp: "10.2.0",
-      bash: "5.1.0",
-    };
+  setLoading(true);
+  setOutput("");
+  setError(false);
 
-    setLoading(true);
-    setOutput(""); 
-    setError(false);
+  const langMap = {
+    "c++": "cpp",
+    c: "c",
+    python: "python",
+    java: "java",
+    javascript: "javascript",
+    bash: "bash",
+  };
 
+  const language = langMap[data?.projLanguage] || "python";
 
-    fetch("https://emkc.org/api/v2/piston/execute", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        language: data.projLanguage,
-        version: data.version,
-        files: [
-          {
-            name:
-              "main" +
-              (data.projLanguage === "python"
-                ? ".py"
-                : data.projLanguage === "java"
-                ? ".java"
-                : data.projLanguage === "javascript"
-                ? ".js"
-                : data.projLanguage === "c"
-                ? ".c"
-                : data.projLanguage === "cpp"
-                ? ".cpp"
-                : data.projLanguage === "bash"
-                ? ".sh"
-                : ""),
-            content: code,
-          },
-        ],
-      }),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (result && result.run) {
-          setOutput(result.run.output || "");
-          setError(result.run.code !== 0);
-        } else {
-          setOutput(result.message || "Error: No run output received.");
-          setError(true);
-        }
-      })
-      .catch(() => {
-        setOutput("Error running project.");
+  const extMap = {
+    cpp: ".cpp",
+    c: ".c",
+    python: ".py",
+    java: ".java",
+    javascript: ".js",
+    bash: ".sh",
+  };
+
+  const fileName = "main" + (extMap[language] || "");
+
+  fetch("https://emkc.org/api/v2/piston/execute", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      language: language,
+      version: data?.version,
+      files: [
+        {
+          name: fileName,
+          content: code,
+        },
+      ],
+      stdin: input, 
+      args: [],
+    }),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (result && result.run) {
+        setOutput(result.run.output || "");
+        setError(result.run.code !== 0);
+      } else {
+        setOutput(result.message || "Error: No run output received.");
         setError(true);
-      })
-      
-      .finally(() => setLoading(false));
+      }
+    })
+    .catch(() => {
+      setOutput("Error running project.");
+      setError(true);
+    })
+    .finally(() => setLoading(false));
+};
 
+
+  const clearAll = () => {
+    setOutput("");
+    setInput("");
   };
 
   return (
@@ -184,37 +197,72 @@ const Editor = () => {
             }}
             height="100%"
             width="100%"
-            language="python"
+            language={
+              data?.projLanguage === "c++"
+                ? "cpp"
+                : data?.projLanguage || "python"
+            }
             value={code}
-            onChange={(newCode) => setCode(newCode || "")}
+            onChange={(newCode) => {
+              setCode(newCode || "");
+              checkInputRequirement(newCode || "");
+            }}
           />
         </div>
 
-        {/* Output screen */}
-        <div className="right p-[15px] w-[50%] h-full bg-[#27272a]">
-          <div className="flex pb-3 border-b-[1px] border-b-[#1e1e1f] items-center justify-between px-[30px]">
-            <p className="p-0 m-0">Output</p>
-            <button
-              className="btnNormal !w-fit !px-[20px] bg-blue-500 transition-all hover:bg-blue-600"
-              onClick={runProject}
-            >
-              Run
-            </button>
+        {/* Output Panel */}
+        <div className="right w-[50%] h-full bg-[#111] flex flex-col">
+  
+          <div className="flex items-center justify-between px-4 py-2 bg-[#27272a] border-b border-gray-700">
+            <div className="flex gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-500"></span>
+              <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+              <span className="w-3 h-3 rounded-full bg-green-500"></span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                onClick={runProject}
+              >
+                Run
+              </button>
+              <button
+                className="px-4 py-1 rounded bg-gray-600 hover:bg-gray-700 text-white text-sm"
+                onClick={clearAll}
+              >
+                Clear
+              </button>
+            </div>
           </div>
 
-          {/* to show loader */}
-          {loading ? (
-            <div className="flex items-center justify-center h-[75vh]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          {/* User Input (visible only if needed) */}
+          {needsInput && (
+            <div className="p-3 border-b border-gray-700 bg-[#1a1a1a]">
+              <label className="block text-gray-400 text-sm mb-1">
+                User Input (stdin):
+              </label>
+              <textarea
+                className="w-full px-3 py-2 rounded bg-[#27272a] text-green-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                rows={3}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Enter input value .."
+              />
             </div>
-          ) : (
-            <pre
-              className={`w-full h-[75vh] overflow-auto ${error ? "text-red-500" : ""}`}
-              style={{ textWrap: "nowrap" }}
-            >
-              {output}
-            </pre>
           )}
+
+          {/* Output Display */}
+          <div className="flex-1 overflow-auto bg-[#27272a] p-3 font-mono text-sm text-green-400">
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-400"></div>
+              </div>
+            ) : (
+              <pre className={`${error ? "text-red-500" : "text-green-400"}`}>
+                {output || "▶ Compile & run to see output here..."}
+              </pre>
+            )}
+          </div>
         </div>
       </div>
     </>

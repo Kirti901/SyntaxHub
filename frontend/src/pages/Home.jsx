@@ -49,7 +49,7 @@ const Home = () => {
   const getRunTimes = async () => {
     let res = await fetch("https://emkc.org/api/v2/piston/runtimes");
     let data = await res.json();
-    const filteredLanguages = ["python", "javascript", "c", "c++", "java", "bash"];
+    const filteredLanguages = ["python", "javascript", "c", "c++", "java"];
     const options = data
       .filter(runtime => filteredLanguages.includes(runtime.language))
       .map(runtime => ({
