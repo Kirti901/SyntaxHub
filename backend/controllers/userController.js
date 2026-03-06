@@ -13,13 +13,12 @@ function getStartupCode(language) {
     return 'public class Main { public static void main(String[] args) { System.out.println("Hello World"); } }';
   } else if (language.toLowerCase() === "javascript") {
     return 'console.log("Hello World");';
-  } else if (language.toLowerCase() === "c++" || language.toLowerCase==="cpp") {
+  } else if (language.toLowerCase() === "c++" || language.toLowerCase()==="cpp") {
     return '#include <iostream>\n\nint main() {\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}';
   } else if (language.toLowerCase() === "c") {
     return '#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}';
-  } else if (language.toLowerCase() === "go") {
-    return 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello World")\n}';
-  } else {
+  } 
+  else {
     return 'Language not supported';
   }
 }

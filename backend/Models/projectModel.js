@@ -8,7 +8,7 @@ const projectSchema=new mongoose.Schema({
     projLanguage:{
         type:String,
         required:true,
-        enum:["c","c++","java","python","javascript","bash"]
+        enum:["c","cpp","java","python","javascript","bash"]
     },
     code:{
         type:String,

@@ -12,7 +12,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
-  const [newPwd, setNewPwd] = useState("");
   const navigate = useNavigate();
 
   const submitForm = (e) => {
@@ -41,38 +40,6 @@ const Login = () => {
         }
       })
       .catch(() => setLoading(false));
-  };
-
-  // Forgot Password Handler
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    if (!forgotEmail || !newPwd) {
-      toast.error("Please enter your email and new password.");
-      return;
-    }
-    fetch(api_base_url + "/forgotPassword", {
-      mode: "cors",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: forgotEmail,
-        newPwd: newPwd
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          toast.success("Password changed successfully. You can now login.");
-          setShowForgot(false);
-          setForgotEmail("");
-          setNewPwd("");
-        } else {
-          toast.error(data.msg);
-        }
-      })
-      .catch(() => toast.error("Error changing password."));
   };
 
   return (
