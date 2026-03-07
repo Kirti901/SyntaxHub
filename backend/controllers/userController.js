@@ -34,6 +34,14 @@ exports.signUp = async (req, res) => {
         msg: "Email already exists",
       });
     }
+    const allowedDomains=["gmail.com","yahoo.com","outlook.com","hotmail.com"];
+    const domain=email.split("@")[1];
+    if(!allowedDomains.includes(domain)){
+      return res.status(400).json({
+        success:false,
+        msg:"Please use valid Email Provider like Gmail"
+      })
+    }
     bcrypt.genSalt(10, (err, salt) => {
       bcrypt.hash(pwd, salt, async function (err, hash) {
         let user = await userModel.create({
